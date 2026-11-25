@@ -1,3 +1,4 @@
+import os
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
@@ -71,16 +72,39 @@ test_result.show(truncate=False)
 
 # 6. Save Positional Index to CSV
 
+if not os.path.exists("output"):
+    os.makedirs("output")
+
 flat_output = positional_index.withColumn(
     "positions",
     F.concat_ws(",", F.col("positions"))
 )
 
-flat_output.write\
-    .mode("overwrite") \
-    .option("header", True) \
-    .csv("output/positional_index_csv")
+final_data = flat_output.toPandas()
+
+final_data.to_csv("output/positional_index.csv", index=False)
 
 print("Positional Index Created Successfully!")
+
+# 7. Save Nested Positional Index to CSV
+
+nested_data = complete_positional_index.toPandas()
+
+nested_data["postings"] = nested_data["postings"].apply(
+    lambda docs: str([
+        {
+            "doc_id": doc["doc_id"],
+            "positions": doc["positions"]
+        }
+        for doc in docs
+    ])
+)
+
+nested_data.to_csv(
+    "output/nested_positional_index.csv",
+    index=False
+)
+
+print("Nested Positional Index Created Successfully!")
 
 spark.stop()
