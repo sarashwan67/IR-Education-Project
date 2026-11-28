@@ -75,19 +75,6 @@ test_result.show(truncate=False)
 if not os.path.exists("output"):
     os.makedirs("output")
 
-flat_output = positional_index.withColumn(
-    "positions",
-    F.concat_ws(",", F.col("positions"))
-)
-
-final_data = flat_output.toPandas()
-
-final_data.to_csv("output/positional_index.csv", index=False)
-
-print("Positional Index Created Successfully!")
-
-# 7. Save Nested Positional Index to CSV
-
 nested_data = complete_positional_index.toPandas()
 
 nested_data["postings"] = nested_data["postings"].apply(
@@ -101,10 +88,10 @@ nested_data["postings"] = nested_data["postings"].apply(
 )
 
 nested_data.to_csv(
-    "output/nested_positional_index.csv",
+    "output/positional_index.csv",
     index=False
 )
 
-print("Nested Positional Index Created Successfully!")
+print("Positional Index Created Successfully!")
 
 spark.stop()
